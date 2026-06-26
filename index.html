@@ -43,6 +43,9 @@
   .kicker{font-size:11px;letter-spacing:.22em;color:var(--stamp);text-transform:uppercase;margin-bottom:18px;}
 
   .scene{font-size:46px;margin-bottom:14px;line-height:1;}
+  .pigimg{width:100%;max-width:300px;display:block;margin:0 auto 10px;cursor:pointer;
+    filter:drop-shadow(0 6px 10px rgba(80,60,30,.18));transition:transform .12s;}
+  .pigimg:active{transform:scale(1.04) rotate(-1deg);}
   .msg{
     font-size:20px;line-height:2;white-space:pre-wrap;
     min-height:130px;display:flex;align-items:center;
@@ -100,17 +103,12 @@
   </div>
   <div class="body">
     <div class="kicker" id="kicker">一封笨笨的道歉</div>
-    <div class="scene" id="scene">🐷</div>
+    <img class="pigimg" id="pigimg" src="img/pig_cut.png" alt="小猪" />
     <div class="msg" id="msg"></div>
   </div>
   <div class="foot" id="foot"></div>
   <div class="stamp">猪猪<br>专属</div>
-  <div class="pal-hint">↓ 戳戳它们 ↓</div>
-  <div class="pals">
-    <span class="pal" data-c="minion">🥽</span>
-    <span class="pal" data-c="maruko">👧</span>
-    <span class="pal" data-c="kuromi">🐰</span>
-  </div>
+  <div class="pal-hint">↑ 戳一下小猪，它会说话 ↑</div>
 </div>
 <div class="bubble" id="bubble"></div>
 
@@ -145,7 +143,7 @@ const nodes={
     o:[{l:"再看一遍",go:"start"}]},
 };
 
-const S=document.getElementById("scene");
+const S={textContent:""};
 const M=document.getElementById("msg");
 const F=document.getElementById("foot");
 const K=document.getElementById("kicker");
@@ -186,22 +184,18 @@ function burst(){
 }
 render();
 
-// 角色彩蛋：原创暖心台词（非影视原句），每个角色一组随机蹦
-const lines={
-  minion:["波拿那~！妈妈最棒啦！🍌","嘎哈哈，抱一个嘛~","我跟童童一起，求妈妈别气啦~"],
-  maruko:["妈妈，今天也辛苦你啦~","嘿嘿，原谅童童一次嘛~","我们一家人，要开开心心的呀。"],
-  kuromi:["哼，嘴硬一下下，其实超爱你的啦。","别凶啦，抱抱更香哦~","坏脾气交给我，温柔留给妈妈~"],
-};
+// 小猪说话：点它随机蹦一句暖心话
+const pigLines=["哼哼~妈妈你最好啦。","抱抱嘛~别生气了嘛~","童童让我来哄你开心~","嘴硬的是我，心里超爱你的。","妈妈辛苦啦，抱个~","我们和好好不好嘛~","喵，不对，是哼叽~我是你的小猪呦。"];
 const bubble=document.getElementById("bubble");
+const pigimg=document.getElementById("pigimg");
 let bubbleTimer=null;
-document.querySelectorAll(".pal").forEach(p=>{
-  p.addEventListener("click",()=>{
-    const arr=lines[p.dataset.c];
-    bubble.textContent=arr[Math.random()*arr.length|0];
-    bubble.classList.add("show");
-    clearTimeout(bubbleTimer);
-    bubbleTimer=setTimeout(()=>bubble.classList.remove("show"),2600);
-  });
+pigimg.addEventListener("click",()=>{
+  bubble.textContent=pigLines[Math.random()*pigLines.length|0];
+  bubble.classList.add("show");
+  pigimg.style.transform="scale(1.06) rotate(-2deg)";
+  setTimeout(()=>pigimg.style.transform="",180);
+  clearTimeout(bubbleTimer);
+  bubbleTimer=setTimeout(()=>bubble.classList.remove("show"),2600);
 });
 </script>
 </body>
