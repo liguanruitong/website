@@ -6,6 +6,7 @@
 <title>给妈妈</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
+  @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css');
   :root{
     --paper:#f4ece0; --card:#fbf6ec; --ink:#3b352c; --faint:#9a8f7c;
     --line:#d8cdb8; --stamp:#c4683f; --stamp2:#7d8a5c;
@@ -131,6 +132,20 @@
     border:4px solid #fff;box-shadow:0 4px 10px rgba(80,60,30,.2);
     break-inside:avoid;animation:gfade .6s ease both;}
   @keyframes gfade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  /* 时光机过场 */
+  .timewarp{position:fixed;inset:0;z-index:200;background:#000;display:none;
+    align-items:center;justify-content:center;flex-direction:column;gap:14px;
+    opacity:0;transition:opacity .8s ease;}
+  .timewarp.on{display:flex;opacity:1;}
+  .timewarp .l1{font-family:"LXGW WenKai","Noto Serif SC",serif;
+    color:#f3ead6;font-size:clamp(22px,5vw,34px);letter-spacing:.18em;
+    opacity:0;transform:translateY(8px);transition:.9s ease;}
+  .timewarp .l2{font-family:"LXGW WenKai","Noto Serif SC",serif;
+    color:#b9a98a;font-size:clamp(13px,3vw,18px);letter-spacing:.32em;font-style:italic;
+    opacity:0;transform:translateY(8px);transition:.9s ease .25s;}
+  .timewarp.show-text .l1,.timewarp.show-text .l2{opacity:1;transform:translateY(0);}
+  .timewarp .spark{position:absolute;width:3px;height:3px;border-radius:50%;
+    background:#ffe9b0;opacity:.0;pointer-events:none;}
 </style>
 </head>
 <body>
@@ -139,6 +154,10 @@
   <div class="bar top"></div>
   <div class="bar bot"></div>
   <div class="heartburst" id="heartburst"></div>
+</div>
+<div class="timewarp" id="timewarp">
+  <div class="l1">正在乘坐时光机......</div>
+  <div class="l2">DIVING BACK IN TIME.....</div>
 </div>
 <div class="ticket">
   <div class="sticker" id="stickerBob"><img src="img/bob_cut.png" alt="小黄人鲍勃" /></div>
@@ -302,10 +321,25 @@ function setupHug(btn, goNode){
     btn.textContent="抱住了 🫶";
     cleanup();
     setTimeout(()=>{
+      const tw=document.getElementById("timewarp");
+      tw.classList.add("on");           // 黑屏淡入
       if(fwLayer) fwLayer.classList.remove("on");
       if(fwImg) fwImg.style.opacity="0";
-      count++; cur=goNode; render();
-    }, 2200);
+      // 黑屏中飞一些小火星
+      for(let i=0;i<40;i++){ const sp=document.createElement("div"); sp.className="spark";
+        sp.style.left="50%"; sp.style.top="50%"; tw.appendChild(sp);
+        const a=Math.random()*6.28,d=60+Math.random()*Math.min(innerWidth,innerHeight)*0.5;
+        sp.animate([{transform:"translate(-50%,-50%) scale(0)",opacity:0},
+          {transform:"translate(-50%,-50%) scale(1)",opacity:.9,offset:.2},
+          {transform:`translate(${Math.cos(a)*d-50}%,${Math.sin(a)*d-50}%) scale(.4)`,opacity:0}],
+          {duration:1600,easing:"ease-out"}); setTimeout(()=>sp.remove(),1600); }
+      setTimeout(()=>tw.classList.add("show-text"), 350);   // 文字淡入
+      setTimeout(()=>{                                       // 约2.4秒后进瀑布流
+        count++; cur=goNode; render();
+        tw.classList.remove("show-text");
+        setTimeout(()=>tw.classList.remove("on"), 700);
+      }, 2600);
+    }, 2000);
   }
   function onKeyDown(e){ if((e.key==="t"||e.key==="T")&&!e.repeat) down(); }
   function onKeyUp(e){ if(e.key==="t"||e.key==="T") up(); }
