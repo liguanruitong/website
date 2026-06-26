@@ -43,9 +43,12 @@
   .kicker{font-size:11px;letter-spacing:.22em;color:var(--stamp);text-transform:uppercase;margin-bottom:18px;}
 
   .scene{font-size:46px;margin-bottom:14px;line-height:1;}
-  .pigimg{width:100%;max-width:300px;display:block;margin:0 auto 10px;cursor:pointer;
+  .pigimg{width:100%;max-width:180px;display:inline-block;margin:0 6px 10px;cursor:pointer;vertical-align:bottom;
     filter:drop-shadow(0 6px 10px rgba(80,60,30,.18));transition:transform .12s;}
   .pigimg:active{transform:scale(1.04) rotate(-1deg);}
+  .minionimg{width:100%;max-width:115px;display:inline-block;margin:0 6px 10px;cursor:pointer;vertical-align:bottom;
+    filter:drop-shadow(0 6px 10px rgba(80,60,30,.18));transition:transform .12s;}
+  .minionimg:active{transform:scale(1.06) rotate(2deg);}
   .msg{
     font-size:20px;line-height:2;white-space:pre-wrap;
     min-height:130px;display:flex;align-items:center;
@@ -104,11 +107,12 @@
   <div class="body">
     <div class="kicker" id="kicker">一封笨笨的道歉</div>
     <img class="pigimg" id="pigimg" src="img/pig_cut.png" alt="小猪" />
+    <img class="minionimg" id="minionimg" src="img/minion_cut.png" alt="小黄人" />
     <div class="msg" id="msg"></div>
   </div>
   <div class="foot" id="foot"></div>
   <div class="stamp">猪猪<br>专属</div>
-  <div class="pal-hint">↑ 戳一下小猪，它会说话 ↑</div>
+  <div class="pal-hint">↑ 戳小猪和小黄人，它们会说话 ↑</div>
 </div>
 <div class="bubble" id="bubble"></div>
 
@@ -194,6 +198,18 @@ pigimg.addEventListener("click",()=>{
   bubble.classList.add("show");
   pigimg.style.transform="scale(1.06) rotate(-2deg)";
   setTimeout(()=>pigimg.style.transform="",180);
+  clearTimeout(bubbleTimer);
+  bubbleTimer=setTimeout(()=>bubble.classList.remove("show"),2600);
+});
+
+// 小黄人打电话：点它随机蹦一句
+const minionLines=["嘿啦！是妈妈吗？童童让我打给你~","波拿那~！妈妈别气啦！","喂～这里是和好热线，接通啦~","巴拿拿～抱抱快递给你！","妈妈辛苦了，mua~","咱俩一起哄妈妈开心，好不好~"];
+const minionimg=document.getElementById("minionimg");
+minionimg.addEventListener("click",()=>{
+  bubble.textContent=minionLines[Math.random()*minionLines.length|0];
+  bubble.classList.add("show");
+  minionimg.style.transform="scale(1.08) rotate(3deg)";
+  setTimeout(()=>minionimg.style.transform="",180);
   clearTimeout(bubbleTimer);
   bubbleTimer=setTimeout(()=>bubble.classList.remove("show"),2600);
 });
