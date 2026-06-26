@@ -143,19 +143,16 @@
     font-weight:400;margin-bottom:2px;text-shadow:0 2px 14px rgba(0,0,0,.5);}
   .bento .sub{font-family:"Huiwen Mincho","Noto Serif SC",serif;color:#bcab8e;
     font-size:13px;letter-spacing:.28em;margin-top:-12px;}
-  .bentogrid{display:grid;gap:14px;width:min(1040px,94vw);
-    grid-template-columns:repeat(4,1fr);grid-auto-rows:150px;grid-auto-flow:dense;}
+  /* 瀑布流：CSS 多列（masonry）——按列从上到下填充，卡高随图比例自适应，永不留空格、不错配 */
+  .bentogrid{column-count:4;column-gap:14px;width:min(1040px,94vw);}
+  @media(max-width:980px){ .bentogrid{column-count:3;} }
   .bentogrid .cell{position:relative;overflow:hidden;border-radius:18px;
-    box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transform:scale(.92) translateY(14px);
-    animation:bcell .7s cubic-bezier(.2,.7,.3,1) forwards;background:#0d0906;}
-  .bentogrid .cell img{width:100%;height:100%;object-fit:cover;display:block;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transform:scale(.96) translateY(12px);
+    animation:bcell .6s cubic-bezier(.2,.7,.3,1) forwards;background:#3a2c20;
+    break-inside:avoid;margin:0 0 14px;display:block;}
+  .bentogrid .cell img{width:100%;height:auto;display:block;
     transition:transform .5s ease;}
-  .bentogrid .cell.full img{object-fit:contain;background:#0d0906;}
   .bentogrid .cell:hover img{transform:scale(1.06);}
-  /* 大小对比:1张大(2x2)、几张竖(1x2)、余 1x1 */
-  .bentogrid .big{grid-column:span 2;grid-row:span 2;}
-  .bentogrid .tall{grid-row:span 2;}
-  .bentogrid .wide{grid-column:span 2;}
   @keyframes bcell{to{opacity:1;transform:scale(1) translateY(0);}}
   /* 固定右下半透明圆形继续按钮 */
   .bento-fab{position:fixed;right:26px;bottom:26px;z-index:198;
@@ -427,36 +424,49 @@ function startBento(onDone){
   btn.style.display=""; // 重置内联，让 CSS 控制显隐（重进时生效）
   grid.innerHTML="";
   if(!galleryImgs.length){ onDone&&onDone(); return; }
-  // 无限随机瀑布流：循环复用这些图，随机打散；每张卡的形状按它实际拿到那张图的真实比例决定，
-  // 所以既无限刷新、又不会横图塞竖框/竖图塞横框；图 load 完才淡入，不会出现纯黑空卡。
-  function shapeFor(im){
-    const r=(im.naturalWidth||1)/(im.naturalHeight||1);
+  // 预加载全部图并缓存尺寸：保证后续每张卡都是“已就绪”，不会出现等下载的黑格。
+  function shapeForRatio(r){
     if(r<0.85) return "tall";   // 竖图 -> 1x2
     if(r>1.2)  return "wide";   // 横图 -> 2x1
     return "";                   // 近方形 -> 1x1
   }
-  // 洗牌队列循环取图，避免连续重复
-  let bag=[];
+  const meta={}; // src -> {ratio, shape}
+  function preloadAll(){
+    return Promise.all(galleryImgs.map(src=>new Promise(res=>{
+      const im=new Image();
+      const done=()=>{ const r=(im.naturalWidth||1)/(im.naturalHeight||1); meta[src]={ratio:r,shape:shapeForRatio(r)}; res(); };
+      im.onload=done; im.onerror=()=>{ meta[src]={ratio:1,shape:""}; res(); };
+      im.src=src; if(im.complete&&im.naturalWidth) done();
+    })));
+  }
+  // 真随机加权抽取：最近用过的图权重降低（既随机不雷同、又不会马上重复）
+  const recent=[];                       // 最近用过的 src 队列
+  const RWIN=Math.min(6, Math.max(2, galleryImgs.length-3));
   function nextSrc(){
-    if(!bag.length){ bag=galleryImgs.slice(); for(let i=bag.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[bag[i],bag[j]]=[bag[j],bag[i]];} }
-    return bag.pop();
+    const weights=galleryImgs.map(src=>{
+      const idx=recent.indexOf(src);       // 越近用过权重越低
+      return idx===-1 ? 1 : 0.06*(idx+1);
+    });
+    let tot=weights.reduce((a,b)=>a+b,0), r=Math.random()*tot, pick=galleryImgs[0];
+    for(let i=0;i<galleryImgs.length;i++){ r-=weights[i]; if(r<=0){ pick=galleryImgs[i]; break; } }
+    recent.unshift(pick); if(recent.length>RWIN) recent.pop();
+    return pick;
   }
   let seq=0;
   function addCard(){
     const src=nextSrc();
     const c=document.createElement("div");
-    c.className="cell";
-    c.style.opacity="0";                 // load 前不显示，杜绝黑卡
-    const im=new Image(); im.alt="";
-    const reveal=()=>{ c.classList.add(shapeFor(im)); c.style.opacity=""; c.style.animation="bcell .7s cubic-bezier(.2,.7,.3,1) forwards"; };
-    im.onload=reveal;
-    im.src=src;
-    if(im.complete && im.naturalWidth) reveal();
+    c.className="cell";                                   // masonry 不需形状类，高度随图自适应
+    const im=new Image(); im.alt=""; im.src=src;          // 已预加载，秒显
     c.appendChild(im); grid.appendChild(c);
     seq++;
   }
   function addBatch(n){ for(let j=0;j<n;j++) addCard(); }
-  addBatch(Math.max(14, galleryImgs.length+3)); // 首屏铺一批
+
+  // 先预加载全部图，再铺首屏并出场（黑格的根源在此根除）
+  preloadAll().then(()=>{
+    addBatch(Math.max(14, galleryImgs.length+3));
+  });
 
   layer.style.display="flex"; requestAnimationFrame(()=>layer.classList.add("on"));
   layer.scrollTop=0;
