@@ -427,36 +427,45 @@ function startBento(onDone){
   btn.style.display=""; // 重置内联，让 CSS 控制显隐（重进时生效）
   grid.innerHTML="";
   if(!galleryImgs.length){ onDone&&onDone(); return; }
-  // 每张图一张卡片，卡片形状跟着图片真实方向走：竖图=竖框(tall)、横图=横框(wide)、近方=普通格。
-  // grid-auto-flow:dense 自动补空，不留黑格；object-fit:cover 在方向匹配的框里不变形。
+  // 无限随机瀑布流：循环复用这些图，随机打散；每张卡的形状按它实际拿到那张图的真实比例决定，
+  // 所以既无限刷新、又不会横图塞竖框/竖图塞横框；图 load 完才淡入，不会出现纯黑空卡。
   function shapeFor(im){
-    const r = (im.naturalWidth||1)/(im.naturalHeight||1);
-    if(r < 0.85) return "tall";   // 竖图 -> 1x2
-    if(r > 1.2)  return "wide";   // 横图 -> 2x1
-    return "";                     // 近方形 -> 1x1
+    const r=(im.naturalWidth||1)/(im.naturalHeight||1);
+    if(r<0.85) return "tall";   // 竖图 -> 1x2
+    if(r>1.2)  return "wide";   // 横图 -> 2x1
+    return "";                   // 近方形 -> 1x1
   }
-  let built=0;
-  galleryImgs.forEach((src,i)=>{
+  // 洗牌队列循环取图，避免连续重复
+  let bag=[];
+  function nextSrc(){
+    if(!bag.length){ bag=galleryImgs.slice(); for(let i=bag.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[bag[i],bag[j]]=[bag[j],bag[i]];} }
+    return bag.pop();
+  }
+  let seq=0;
+  function addCard(){
+    const src=nextSrc();
     const c=document.createElement("div");
     c.className="cell";
-    c.style.animationDelay=(Math.min(0.7, i*0.07))+"s";
+    c.style.opacity="0";                 // load 前不显示，杜绝黑卡
     const im=new Image(); im.alt="";
-    im.onload=()=>{ c.classList.add(shapeFor(im)); };
+    const reveal=()=>{ c.classList.add(shapeFor(im)); c.style.opacity=""; c.style.animation="bcell .7s cubic-bezier(.2,.7,.3,1) forwards"; };
+    im.onload=reveal;
     im.src=src;
-    // 若已缓存，onload 可能不触发，立即判一次
-    if(im.complete && im.naturalWidth){ c.classList.add(shapeFor(im)); }
+    if(im.complete && im.naturalWidth) reveal();
     c.appendChild(im); grid.appendChild(c);
-    built++;
-  });
+    seq++;
+  }
+  function addBatch(n){ for(let j=0;j<n;j++) addCard(); }
+  addBatch(Math.max(14, galleryImgs.length+3)); // 首屏铺一批
 
   layer.style.display="flex"; requestAnimationFrame(()=>layer.classList.add("on"));
   layer.scrollTop=0;
 
-  // 背景随滚动在暖色系间柔和渐变（按整页滚动进度，不循环、不追加图片）
-  const palette=[[42,32,24],[58,38,26],[74,44,30],[48,36,28]];
+  // 背景随滚动在暖色系间循环柔和变色（无限滚动用循环进度）
+  const palette=[[42,32,24],[58,38,26],[74,44,30],[48,36,28],[34,26,20]];
   const lerp=(a,b,t)=>Math.round(a+(b-a)*t);
   const applyBg=(p)=>{
-    p=Math.max(0,Math.min(1,p))*(palette.length-1);
+    p=((p%1)+1)%1*(palette.length-1);
     const i=Math.min(palette.length-2,Math.floor(p)); const f=p-i;
     const c1=palette[i],c2=palette[i+1];
     const top=[lerp(c1[0],c2[0],f),lerp(c1[1],c2[1],f),lerp(c1[2],c2[2],f)];
@@ -464,8 +473,8 @@ function startBento(onDone){
     layer.style.background=`radial-gradient(circle at 50% 30%, rgb(${top[0]},${top[1]},${top[2]}), rgb(${bot[0]},${bot[1]},${bot[2]}) 80%)`;
   };
   const onScroll=()=>{
-    const max=Math.max(1, layer.scrollHeight-layer.clientHeight);
-    applyBg(layer.scrollTop/max);
+    applyBg(layer.scrollTop/1400);              // 每 1400px 一个变色循环
+    if(layer.scrollTop+layer.clientHeight > layer.scrollHeight-700){ addBatch(8); } // 接近底部就续
   };
   layer.addEventListener("scroll",onScroll,{passive:true});
   applyBg(0);
