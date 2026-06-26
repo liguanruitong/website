@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>给最亲爱的妈妈 🍌</title>
+<style>
+  :root{
+    --bg1:#fff7d6; --bg2:#ffe9a8; --accent:#ffcf33; --ink:#5a4326;
+    --soft:#fff3c4; --pink:#ff9eb5;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,var(--bg1),var(--bg2));
+    color:var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;overflow:hidden;position:relative;
+  }
+  .float{position:fixed;top:-40px;font-size:26px;opacity:.5;animation:fall linear infinite;pointer-events:none;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(360deg);}}
+
+  .card{
+    width:min(92vw,460px);
+    background:#fffdf5;
+    border-radius:28px;
+    padding:34px 26px 30px;
+    box-shadow:0 18px 50px rgba(160,120,20,.25);
+    text-align:center;position:relative;z-index:2;
+    animation:pop .5s ease;
+  }
+  @keyframes pop{from{transform:scale(.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+  .emoji{font-size:60px;line-height:1;margin-bottom:6px;display:block;animation:bob 2.2s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
+
+  .step-text{
+    font-size:20px;line-height:1.85;margin:14px 4px 24px;
+    min-height:110px;display:flex;align-items:center;justify-content:center;
+    white-space:pre-wrap;animation:fade .6s ease;
+  }
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  .big{font-size:23px;font-weight:700;color:#c9853a;}
+
+  .btns{display:flex;flex-direction:column;gap:12px;align-items:center;}
+  button{
+    border:none;cursor:pointer;font-family:inherit;
+    background:var(--accent);color:#5a4326;font-weight:700;
+    font-size:17px;padding:13px 26px;border-radius:50px;width:100%;max-width:320px;
+    box-shadow:0 6px 0 #e0b020;transition:transform .08s, box-shadow .08s;
+  }
+  button:active{transform:translateY(4px);box-shadow:0 2px 0 #e0b020;}
+  button.alt{background:#ffe28a;box-shadow:0 6px 0 #e7c552;}
+  button.alt:active{box-shadow:0 2px 0 #e7c552;}
+  .hug{background:var(--pink)!important;box-shadow:0 6px 0 #e0809a!important;}
+  .hug:active{box-shadow:0 2px 0 #e0809a!important;}
+
+  .hint{font-size:13px;color:#b39a6a;margin-top:14px;height:18px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <span class="emoji" id="emoji">🍌</span>
+  <div class="step-text" id="text"></div>
+  <div class="btns" id="btns"></div>
+  <div class="hint" id="hint"></div>
+</div>
+
+<script>
+const deco=["🍌","💛","🐷","🐥","🌼"];
+setInterval(()=>{
+  const s=document.createElement("div");
+  s.className="float";s.textContent=deco[Math.random()*deco.length|0];
+  s.style.left=Math.random()*100+"vw";
+  s.style.animationDuration=(6+Math.random()*5)+"s";
+  s.style.fontSize=(18+Math.random()*18)+"px";
+  document.body.appendChild(s);
+  setTimeout(()=>s.remove(),11000);
+},900);
+
+// 每个节点：e=表情, t=文字, opts=[{label, alt?, go}], 或 end / hug
+const nodes={
+  start:{e:"🐷",t:"妈妈，是童童。\n先别急着走，\n给我一分钟，好不好？",
+    opts:[{label:"好呀，我看看 👀",go:"a1"},{label:"哼，说吧 😤",alt:true,go:"a1b"}]},
+
+  // 分支：温柔进 vs 还在气头上进 —— 都通向同一条暖线，但开场话不同
+  a1:{e:"💛",t:"谢谢你愿意给我这一分钟。\n我知道，最近我把你气坏了。",opts:[{label:"嗯…然后呢",go:"core1"}]},
+  a1b:{e:"🥺",t:"我知道你还在生气，\n生气是应该的，是我不好。\n那你就一边气，一边听我说，好吗？",opts:[{label:"……说吧",go:"core1"}]},
+
+  core1:{e:"💛",t:"那天我说了好多气话，\n还说了否认你付出的话。\n那些话，是错的。",opts:[{label:"继续",go:"core2"}]},
+  core2:{e:"😢",t:"妈妈，对不起。\n不是敷衍的对不起，\n是我心里真的很后悔的那种。",opts:[{label:"我听着呢",go:"q1"}]},
+
+  // 选择题1：让她参与，但两个答案都温柔
+  q1:{e:"🤔",t:"我想问问你——\n你还记得我小时候\n最爱粘着你的样子吗？",
+    opts:[{label:"当然记得呀",go:"q1a"},{label:"你这猪，又来😶",alt:true,go:"q1b"}]},
+  q1a:{e:"🥰",t:"我也记得。\n那个粘着你的童童一直都在，\n只是最近她心里有点累，\n就乱发脾气了。",opts:[{label:"继续",go:"core3"}]},
+  q1b:{e:"🐷",t:"哈哈，对，我就是你的小猪。\n你叫我猪的时候，\n其实我心里是甜的。\n这次是我这只猪不乖，气到你了。",opts:[{label:"继续",go:"core3"}]},
+
+  core3:{e:"🐥",t:"我想悄悄告诉你：\n我不是懒，也不是不懂事。\n我只是有时候心里\n装了一些说不出口的累。",opts:[{label:"嗯",go:"core4"}]},
+  core4:{e:"🌼",t:"那些累我没说好，\n反而用伤人的方式甩给了你。\n这是我的不对，\n我在学着好好说话了。",opts:[{label:"继续",go:"q2"}]},
+
+  // 选择题2
+  q2:{e:"💭",t:"你愿意，\n再给我一次好好和你说话的机会吗？",
+    opts:[{label:"傻孩子，当然愿意",go:"core5"},{label:"看你表现😏",alt:true,go:"core5"}]},
+
+  core5:{e:"💛",t:"我是个愿意努力的孩子。\n真的。\n我想让你看见\n那个努力的童童，\n而不只是犯错的童童。",opts:[{label:"再点一下",go:"hug"}]},
+
+  hug:{e:"🫶",t:"现在，\n请你按住下面这个抱抱，\n替我抱抱你自己——\n那是我想给你的拥抱。",
+    opts:[{label:"按住抱抱 🫶",hug:true,go:"final"}]},
+
+  final:{e:"🐷💛🍌",t:"妈妈，我爱你。\n我们和好，好不好？\n以后我想和你\n好好说话，慢慢来。\n\n——你的童童\n（这是我一页一页\n亲手给你做的）",
+    end:true,opts:[{label:"再看一遍 🔁",go:"start"}]},
+};
+
+const E=document.getElementById("emoji");
+const T=document.getElementById("text");
+const BTNS=document.getElementById("btns");
+const H=document.getElementById("hint");
+let cur="start";
+
+function render(){
+  const n=nodes[cur];
+  E.textContent=n.e;
+  T.innerHTML=`<span class="${cur==='start'||n.end?'big':''}">${n.t}</span>`;
+  T.style.animation="none";void T.offsetWidth;T.style.animation="";
+  BTNS.innerHTML="";
+  n.opts.forEach(o=>{
+    const b=document.createElement("button");
+    b.textContent=o.label;
+    if(o.alt)b.classList.add("alt");
+    if(o.hug)b.classList.add("hug");
+    b.onclick=()=>{ if(o.hug)burst(); cur=o.go; render(); };
+    BTNS.appendChild(b);
+  });
+  H.textContent=cur==="start"?"（轻轻点一下）":"";
+}
+function burst(){
+  for(let k=0;k<18;k++){
+    const h=document.createElement("div");
+    h.textContent="💛";h.style.position="fixed";
+    h.style.left="50%";h.style.top="55%";h.style.fontSize="24px";
+    h.style.zIndex=99;h.style.pointerEvents="none";
+    document.body.appendChild(h);
+    const ang=Math.random()*6.28,dist=80+Math.random()*120;
+    h.animate([{transform:"translate(-50%,-50%) scale(.3)",opacity:1},
+      {transform:`translate(${Math.cos(ang)*dist-50}%,${Math.sin(ang)*dist-50}%) scale(1.4)`,opacity:0}],
+      {duration:900,easing:"ease-out"});
+    setTimeout(()=>h.remove(),900);
+  }
+}
+render();
+</script>
+</body>
+</html>
