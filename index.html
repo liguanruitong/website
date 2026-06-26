@@ -110,9 +110,26 @@
   }
   .bubble.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .pal-hint{text-align:center;font-size:11px;color:var(--faint);letter-spacing:.1em;padding-bottom:4px;}
+  /* 烟花淡入图层 */
+  .fireworks{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 50%, rgba(20,12,30,.0), rgba(20,12,30,.0));
+    pointer-events:none;transition:background .6s;}
+  .fireworks.on{display:flex;background:radial-gradient(circle at 50% 50%, rgba(20,12,30,.35), rgba(20,12,30,.6));}
+  .fireworks img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.7);
+    max-width:88vw;max-height:80vh;opacity:0;transition:opacity .12s linear, transform .25s ease;
+    filter:drop-shadow(0 0 30px rgba(255,210,120,.5));}
+  /* 瀑布流相册 */
+  .gallery{column-count:2;column-gap:10px;margin:6px 0 4px;}
+  .gallery img{width:100%;border-radius:6px;margin-bottom:10px;display:block;
+    border:4px solid #fff;box-shadow:0 4px 10px rgba(80,60,30,.2);
+    break-inside:avoid;animation:gfade .6s ease both;}
+  @keyframes gfade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 </style>
 </head>
 <body>
+<div class="fireworks" id="fireworks">
+  <img id="fwImg" src="img/firework.png" alt="" />
+</div>
 <div class="ticket">
   <div class="sticker" id="stickerBob"><img src="img/bob_cut.png" alt="小黄人鲍勃" /></div>
   <div class="sticker" id="stickerDj"><img src="img/dj_cut.png" alt="小黄人DJ" /></div>
@@ -155,13 +172,17 @@ const nodes={
 
   c5:{s:"💛",k:"我想说的",t:"我是个肯努力的孩子。\n我只是想让你看见\n那个在使劲的童童,\n不是只会闯祸的那个。",o:[{l:"最后一步",go:"hug"}]},
 
-  hug:{s:"🫶",k:"替我抱抱你",t:"按住下面,\n替我抱一下你自己。\n那是我想给你的\n那个抱抱。",
-    o:[{l:"按住 🫶",go:"final",hug:1,fill:1}]},
+  hug:{s:"🫶",k:"替我抱抱你",t:"按住键盘上的「T」键,\n别松手,数到三——\n那是我想给你的\n那个长长的抱抱。",
+    o:[{l:"(按住 T 键 3 秒)",go:"gallery",hugkey:1}]},
+
+  gallery:{s:"🖼️",k:"我们的样子",t:"这些,\n是我们待过的好时候。\n往下慢慢看~",gallery:1,
+    o:[{l:"看完啦,继续",go:"final",fill:1}]},
 
   final:{s:"🐷",k:"完",t:"妈妈,我爱你。\n我们和好吧。\n以后我想跟你\n慢慢地、好好地说话。\n\n--童童\n(这是我一页页\n给你做的)",end:1,
     o:[{l:"再看一遍",go:"start"}]},
 };
 
+const galleryImgs=["img/g1.jpg","img/g2.jpg","img/g3.jpg","img/g4.jpg"];
 const S={textContent:""};
 const M=document.getElementById("msg");
 const F=document.getElementById("foot");
@@ -177,13 +198,27 @@ function render(){
   M.className="msg"+((cur==="start"||n.end)?" big":"");
   M.textContent=n.t;
   M.style.animation="none";void M.offsetWidth;M.style.animation="";
+  // 瀑布流相册
+  const oldG=document.getElementById("galleryBox"); if(oldG) oldG.remove();
+  if(n.gallery){
+    const g=document.createElement("div");
+    g.className="gallery"; g.id="galleryBox";
+    galleryImgs.forEach((src,i)=>{ const im=new Image(); im.src=src; im.style.animationDelay=(i*0.08)+"s"; g.appendChild(im); });
+    M.parentNode.insertBefore(g, M.nextSibling);
+  }
   F.innerHTML="";
   n.o.forEach(o=>{
     const b=document.createElement("button");
     b.textContent=o.l;
     if(o.fill)b.classList.add("fill");
     if(o.warm)b.classList.add("warm");
-    b.onclick=()=>{ if(o.hug)burst(); if(!n.end)count++; if(cur==="final"&&o.go==="start")count=1; cur=o.go; render(); };
+    if(o.hugkey){
+      b.classList.add("fill");
+      b.id="hugBtn";
+      setupHug(b,o.go);
+    } else {
+      b.onclick=()=>{ if(o.hug)burst(); if(!n.end)count++; if(cur==="final"&&o.go==="start")count=1; cur=o.go; render(); };
+    }
     F.appendChild(b);
   });
 }
@@ -201,9 +236,84 @@ function burst(){
     setTimeout(()=>h.remove(),850);
   }
 }
+// ====== 按住 T 键 3 秒抱抱 ======
+let hugCleanup=null;
+function setupHug(btn, goNode){
+  let holding=false, start=0, raf=null, done=false;
+  const HOLD=3000;
+  const fwImg=document.getElementById("fwImg");
+  const fwLayer=document.getElementById("fireworks");
+
+  function progressUI(p){
+    btn.textContent = p<=0 ? "(按住 T 键 3 秒)" : (p>=1? "抱住了 🫶" : "抱紧中… "+Math.ceil(3-3*p)+"  ");
+    // 烟花图随进度由淡到浓
+    if(fwLayer){ fwLayer.style.pointerEvents="none"; }
+    if(fwImg){ fwImg.style.opacity = (p*0.95).toFixed(3); fwImg.style.transform = "translate(-50%,-50%) scale("+(0.7+p*0.45).toFixed(3)+")"; }
+  }
+  function tick(){
+    if(!holding) return;
+    const p=Math.min(1,(performance.now()-start)/HOLD);
+    progressUI(p);
+    if(p>=1){ success(); return; }
+    raf=requestAnimationFrame(tick);
+  }
+  function down(){
+    if(done||holding) return;
+    holding=true; start=performance.now();
+    if(fwLayer) fwLayer.classList.add("on");
+    raf=requestAnimationFrame(tick);
+  }
+  function up(){
+    if(done) return;
+    holding=false; if(raf)cancelAnimationFrame(raf);
+    progressUI(0);
+    if(fwImg) fwImg.style.opacity="0";
+    if(fwLayer) fwLayer.classList.remove("on");
+  }
+  function success(){
+    done=true; holding=false;
+    if(fwImg){ fwImg.style.opacity="1"; fwImg.style.transform="translate(-50%,-50%) scale(1.15)"; }
+    burst();
+    btn.textContent="抱住了 🫶";
+    cleanup();
+    setTimeout(()=>{
+      if(fwLayer) fwLayer.classList.remove("on");
+      if(fwImg) fwImg.style.opacity="0";
+      count++; cur=goNode; render();
+    }, 2200);
+  }
+  function onKeyDown(e){ if((e.key==="t"||e.key==="T")&&!e.repeat) down(); }
+  function onKeyUp(e){ if(e.key==="t"||e.key==="T") up(); }
+  function cleanup(){
+    document.removeEventListener("keydown",onKeyDown);
+    document.removeEventListener("keyup",onKeyUp);
+    btn.removeEventListener("mousedown",down);
+    btn.removeEventListener("mouseup",up);
+    btn.removeEventListener("mouseleave",up);
+    btn.removeEventListener("touchstart",tdown);
+    btn.removeEventListener("touchend",up);
+    hugCleanup=null;
+  }
+  function tdown(e){ e.preventDefault(); down(); }
+  // 键盘（电脑）
+  document.addEventListener("keydown",onKeyDown);
+  document.addEventListener("keyup",onKeyUp);
+  // 兼容鼠标/触屏按住（手机没T键时也能用）
+  btn.addEventListener("mousedown",down);
+  btn.addEventListener("mouseup",up);
+  btn.addEventListener("mouseleave",up);
+  btn.addEventListener("touchstart",tdown,{passive:false});
+  btn.addEventListener("touchend",up);
+  progressUI(0);
+  hugCleanup=cleanup;
+}
+
 render();
 
+
 // 小黄人贴纸：点它们说话
+// 小猪说话：自称“居”、会哼哼
+const pigLines=["哼哼~居是妈妈的小猪呀。","哼唧哼唧…居错啦,抱抱嘛~","居最爱妈妈了啦,哼~","妈妈别气啦,居给你拱拱~","哼哼!居会乖乖的啦~","居想妈妈了…哼唧。","妈妈妈妈,居跟你和好好不好嘛~"];
 const bobLines=["巴拿拿~抱着小熊来抱抱妈妈啦！","波拿那~妈妈别气，抱一个嘛~","我和小熊都想你了，妈妈~","软软的抱抱，送给你~","妈妈辛苦了，mua~"];
 const djLines=["和好吧。这事儿，听我的。","别气了。酷的人不记仇。","节奏我来，你只管开心。","这首歌，叫《对不起》。","行了行了，抱一个，完事。"];
 const bubble=document.getElementById("bubble");
