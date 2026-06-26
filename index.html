@@ -114,10 +114,17 @@
   .fireworks{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
     background:radial-gradient(circle at 50% 50%, rgba(20,12,30,.0), rgba(20,12,30,.0));
     pointer-events:none;transition:background .6s;}
-  .fireworks.on{display:flex;background:radial-gradient(circle at 50% 50%, rgba(40,25,10,.25), rgba(40,25,10,.5));}
-  .fireworks img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.7);
-    max-width:92vw;max-height:82vh;border-radius:10px;opacity:0;transition:opacity .12s linear, transform .25s ease;
-    filter:drop-shadow(0 0 40px rgba(255,200,110,.7));}
+  .fireworks.on{display:flex;background:#000;}
+  .fireworks img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.85);
+    width:100vw;height:100vh;object-fit:cover;opacity:0;transition:opacity .15s linear, transform .35s ease;}
+  /* 电影黑边 */
+  .bar{position:absolute;left:0;right:0;height:11vh;background:#000;z-index:3;
+    opacity:0;transition:opacity .4s ease;}
+  .fireworks.on .bar{opacity:1;}
+  .bar.top{top:0;} .bar.bot{bottom:0;}
+  /* 大爱心绽放容器 */
+  .heartburst{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    z-index:4;pointer-events:none;width:0;height:0;}
   /* 瀑布流相册 */
   .gallery{column-count:2;column-gap:10px;margin:6px 0 4px;}
   .gallery img{width:100%;border-radius:6px;margin-bottom:10px;display:block;
@@ -129,6 +136,9 @@
 <body>
 <div class="fireworks" id="fireworks">
   <img id="fwImg" src="img/firework.jpg" alt="" />
+  <div class="bar top"></div>
+  <div class="bar bot"></div>
+  <div class="heartburst" id="heartburst"></div>
 </div>
 <div class="ticket">
   <div class="sticker" id="stickerBob"><img src="img/bob_cut.png" alt="小黄人鲍勃" /></div>
@@ -222,18 +232,31 @@ function render(){
     F.appendChild(b);
   });
 }
-function burst(){
-  for(let k=0;k<20;k++){
+function burst(big){
+  // 普通小爆（贴纸/小猪用）
+  const N = big? 46 : 18;
+  const layer = big ? document.body : document.body;
+  const vmin = Math.min(window.innerWidth, window.innerHeight);
+  for(let k=0;k<N;k++){
     const h=document.createElement("div");
-    h.textContent="💛";h.style.position="fixed";
-    h.style.left="50%";h.style.top="55%";h.style.fontSize="22px";
-    h.style.zIndex="99";h.style.pointerEvents="none";
+    const hearts=["💛","🧡","❤️","💖","✨"];
+    h.textContent=big? hearts[Math.random()*hearts.length|0] : "💛";
+    h.style.position="fixed";
+    h.style.left="50%";h.style.top="50%";
+    // 大绽放：爱心散布到约半屏(vmin*0.5)，字号大
+    const baseFont = big ? (26+Math.random()*38) : 22;
+    h.style.fontSize=baseFont+"px";
+    h.style.zIndex="120";h.style.pointerEvents="none";
+    h.style.willChange="transform,opacity";
     document.body.appendChild(h);
-    const a=Math.random()*6.28,d=70+Math.random()*120;
-    h.animate([{transform:"translate(-50%,-50%) scale(.3)",opacity:1},
-      {transform:`translate(${Math.cos(a)*d-50}%,${Math.sin(a)*d-50}%) scale(1.3)`,opacity:0}],
-      {duration:850,easing:"ease-out"});
-    setTimeout(()=>h.remove(),850);
+    const a=Math.random()*6.28;
+    const d = big ? (vmin*0.18 + Math.random()*vmin*0.34) : (70+Math.random()*120);
+    const dur = big ? (1100+Math.random()*700) : 850;
+    h.animate([
+      {transform:"translate(-50%,-50%) scale(.2) rotate(0deg)",opacity:1},
+      {transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d}px) scale(${big?1.8:1.3}) rotate(${(Math.random()*60-30)|0}deg)`,opacity:0}
+    ],{duration:dur,easing:"cubic-bezier(.15,.7,.3,1)"});
+    setTimeout(()=>h.remove(),dur);
   }
 }
 // ====== 按住 T 键 3 秒抱抱 ======
@@ -248,7 +271,7 @@ function setupHug(btn, goNode){
     btn.textContent = p<=0 ? "(按住 T 键 3 秒)" : (p>=1? "抱住了 🫶" : "抱紧中… "+Math.ceil(3-3*p)+"  ");
     // 烟花图随进度由淡到浓
     if(fwLayer){ fwLayer.style.pointerEvents="none"; }
-    if(fwImg){ fwImg.style.opacity = (p*0.95).toFixed(3); fwImg.style.transform = "translate(-50%,-50%) scale("+(0.7+p*0.45).toFixed(3)+")"; }
+    if(fwImg){ fwImg.style.opacity = (p).toFixed(3); fwImg.style.transform = "translate(-50%,-50%) scale("+(0.85+p*0.15).toFixed(3)+")"; }
   }
   function tick(){
     if(!holding) return;
@@ -272,8 +295,10 @@ function setupHug(btn, goNode){
   }
   function success(){
     done=true; holding=false;
-    if(fwImg){ fwImg.style.opacity="1"; fwImg.style.transform="translate(-50%,-50%) scale(1.15)"; }
-    burst();
+    if(fwImg){ fwImg.style.opacity="1"; fwImg.style.transform="translate(-50%,-50%) scale(1.0)"; }
+    burst(true);
+    setTimeout(()=>burst(true),350);
+    setTimeout(()=>burst(true),720);
     btn.textContent="抱住了 🫶";
     cleanup();
     setTimeout(()=>{
