@@ -7,6 +7,11 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
   @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css');
+  @font-face{
+    font-family:"Huiwen Mincho";
+    src:url('fonts/huiwen-mincho.woff2') format('woff2');
+    font-weight:400;font-display:swap;
+  }
   :root{
     --paper:#f4ece0; --card:#fbf6ec; --ink:#3b352c; --faint:#9a8f7c;
     --line:#d8cdb8; --stamp:#c4683f; --stamp2:#7d8a5c;
@@ -137,10 +142,10 @@
     align-items:center;justify-content:center;flex-direction:column;gap:14px;
     opacity:0;transition:opacity .8s ease;}
   .timewarp.on{display:flex;opacity:1;}
-  .timewarp .l1{font-family:"LXGW WenKai","Noto Serif SC",serif;
+  .timewarp .l1{font-family:"Huiwen Mincho","LXGW WenKai","Noto Serif SC",serif;
     color:#f3ead6;font-size:clamp(22px,5vw,34px);letter-spacing:.18em;
     opacity:0;transform:translateY(8px);transition:.9s ease;}
-  .timewarp .l2{font-family:"LXGW WenKai","Noto Serif SC",serif;
+  .timewarp .l2{font-family:"Huiwen Mincho","LXGW WenKai","Noto Serif SC",serif;
     color:#b9a98a;font-size:clamp(13px,3vw,18px);letter-spacing:.32em;font-style:italic;
     opacity:0;transform:translateY(8px);transition:.9s ease .25s;}
   .timewarp.show-text .l1,.timewarp.show-text .l2{opacity:1;transform:translateY(0);}
@@ -320,25 +325,29 @@ function setupHug(btn, goNode){
     setTimeout(()=>burst(true),720);
     btn.textContent="抱住了 🫶";
     cleanup();
+    // 烟花放完(约2秒) → 纯黑屏静默1秒 → 中央双行字淡入 → 停留 → 进下一步
     setTimeout(()=>{
       const tw=document.getElementById("timewarp");
-      tw.classList.add("on");           // 黑屏淡入
+      tw.classList.add("on");           // 纯黑屏淡入(0.8s),此刻不出字
       if(fwLayer) fwLayer.classList.remove("on");
       if(fwImg) fwImg.style.opacity="0";
-      // 黑屏中飞一些小火星
-      for(let i=0;i<40;i++){ const sp=document.createElement("div"); sp.className="spark";
-        sp.style.left="50%"; sp.style.top="50%"; tw.appendChild(sp);
-        const a=Math.random()*6.28,d=60+Math.random()*Math.min(innerWidth,innerHeight)*0.5;
-        sp.animate([{transform:"translate(-50%,-50%) scale(0)",opacity:0},
-          {transform:"translate(-50%,-50%) scale(1)",opacity:.9,offset:.2},
-          {transform:`translate(${Math.cos(a)*d-50}%,${Math.sin(a)*d-50}%) scale(.4)`,opacity:0}],
-          {duration:1600,easing:"ease-out"}); setTimeout(()=>sp.remove(),1600); }
-      setTimeout(()=>tw.classList.add("show-text"), 350);   // 文字淡入
-      setTimeout(()=>{                                       // 约2.4秒后进瀑布流
+      // 黑屏静默约1秒后,再出字 + 飞一些小火星
+      setTimeout(()=>{
+        tw.classList.add("show-text");   // 双行文字淡入
+        for(let i=0;i<40;i++){ const sp=document.createElement("div"); sp.className="spark";
+          sp.style.left="50%"; sp.style.top="50%"; tw.appendChild(sp);
+          const a=Math.random()*6.28,d=60+Math.random()*Math.min(innerWidth,innerHeight)*0.5;
+          sp.animate([{transform:"translate(-50%,-50%) scale(0)",opacity:0},
+            {transform:"translate(-50%,-50%) scale(1)",opacity:.9,offset:.2},
+            {transform:`translate(${Math.cos(a)*d-50}%,${Math.sin(a)*d-50}%) scale(.4)`,opacity:0}],
+            {duration:1600,easing:"ease-out"}); setTimeout(()=>sp.remove(),1600); }
+      }, 1000);
+      // 字停留约2.4秒后进瀑布流(待接入撕照片环节)
+      setTimeout(()=>{
         count++; cur=goNode; render();
         tw.classList.remove("show-text");
         setTimeout(()=>tw.classList.remove("on"), 700);
-      }, 2600);
+      }, 3800);
     }, 2000);
   }
   function onKeyDown(e){ if((e.key==="t"||e.key==="T")&&!e.repeat) down(); }
