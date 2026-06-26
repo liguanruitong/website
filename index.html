@@ -457,16 +457,24 @@ function startBento(onDone){
     const src=nextSrc();
     const c=document.createElement("div");
     c.className="cell";                                   // masonry 不需形状类，高度随图自适应
-    const im=new Image(); im.alt=""; im.src=src;          // 已预加载，秒显
+    // 已知比例就先给占位高度（按列宽×比例），未知则给个暖棕色占位方块——
+    // 这样卡片“立刻”出现，图片随后淡入，永不出现空白等待期。
+    const m=meta[src];
+    if(m&&m.ratio){ c.style.aspectRatio=String(m.ratio); }
+    else { c.style.minHeight="180px"; }
+    const im=new Image(); im.alt="";
+    im.style.opacity="0"; im.style.transition="opacity .45s ease";
+    im.onload=()=>{ im.style.opacity="1"; c.style.aspectRatio=""; c.style.minHeight=""; };
+    im.onerror=()=>{ im.style.opacity="1"; };
+    im.src=src;                                          // 各自异步加载，加载完淡入
     c.appendChild(im); grid.appendChild(c);
     seq++;
   }
   function addBatch(n){ for(let j=0;j<n;j++) addCard(); }
 
-  // 先预加载全部图，再铺首屏并出场（黑格的根源在此根除）
-  preloadAll().then(()=>{
-    addBatch(Math.max(14, galleryImgs.length+3));
-  });
+  // 立刻铺首屏卡片（带占位，不等下载）；同时后台预加载尺寸用于后续卡片的精确占位比例。
+  addBatch(Math.max(14, galleryImgs.length+3));
+  preloadAll();   // 仅为填充 meta{} 比例，不再阻塞首屏显示
 
   layer.style.display="flex"; requestAnimationFrame(()=>layer.classList.add("on"));
   layer.scrollTop=0;
