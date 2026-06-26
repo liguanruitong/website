@@ -114,10 +114,10 @@
   .fireworks{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
     background:radial-gradient(circle at 50% 50%, rgba(20,12,30,.0), rgba(20,12,30,.0));
     pointer-events:none;transition:background .6s;}
-  .fireworks.on{display:flex;background:radial-gradient(circle at 50% 50%, rgba(20,12,30,.35), rgba(20,12,30,.6));}
+  .fireworks.on{display:flex;background:radial-gradient(circle at 50% 50%, rgba(40,25,10,.25), rgba(40,25,10,.5));}
   .fireworks img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.7);
-    max-width:88vw;max-height:80vh;opacity:0;transition:opacity .12s linear, transform .25s ease;
-    filter:drop-shadow(0 0 30px rgba(255,210,120,.5));}
+    max-width:92vw;max-height:82vh;border-radius:10px;opacity:0;transition:opacity .12s linear, transform .25s ease;
+    filter:drop-shadow(0 0 40px rgba(255,200,110,.7));}
   /* 瀑布流相册 */
   .gallery{column-count:2;column-gap:10px;margin:6px 0 4px;}
   .gallery img{width:100%;border-radius:6px;margin-bottom:10px;display:block;
@@ -128,7 +128,7 @@
 </head>
 <body>
 <div class="fireworks" id="fireworks">
-  <img id="fwImg" src="img/firework.png" alt="" />
+  <img id="fwImg" src="img/firework.jpg" alt="" />
 </div>
 <div class="ticket">
   <div class="sticker" id="stickerBob"><img src="img/bob_cut.png" alt="小黄人鲍勃" /></div>
