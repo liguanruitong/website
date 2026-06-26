@@ -3,153 +3,206 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>给最亲爱的妈妈 🍌</title>
+<title>给妈妈</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
   :root{
-    --bg1:#fff7d6; --bg2:#ffe9a8; --accent:#ffcf33; --ink:#5a4326;
-    --soft:#fff3c4; --pink:#ff9eb5;
+    --paper:#f4ece0; --card:#fbf6ec; --ink:#3b352c; --faint:#9a8f7c;
+    --line:#d8cdb8; --stamp:#c4683f; --stamp2:#7d8a5c;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;height:100%;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+  html,body{height:100%;}
   body{
-    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
-    background:linear-gradient(160deg,var(--bg1),var(--bg2));
+    font-family:"Noto Serif SC",serif;
+    background:var(--paper);
+    background-image:radial-gradient(circle at 50% 0%, #faf3e6, var(--paper) 70%);
     color:var(--ink);
     display:flex;align-items:center;justify-content:center;
-    min-height:100vh;overflow:hidden;position:relative;
+    min-height:100vh;padding:22px;
   }
-  .float{position:fixed;top:-40px;font-size:26px;opacity:.5;animation:fall linear infinite;pointer-events:none;}
-  @keyframes fall{to{transform:translateY(110vh) rotate(360deg);}}
-
-  .card{
-    width:min(92vw,460px);
-    background:#fffdf5;
-    border-radius:28px;
-    padding:34px 26px 30px;
-    box-shadow:0 18px 50px rgba(160,120,20,.25);
-    text-align:center;position:relative;z-index:2;
-    animation:pop .5s ease;
+  .ticket{
+    width:min(92vw,420px);
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    box-shadow:0 14px 40px rgba(80,60,30,.16);
+    position:relative;overflow:hidden;
+    animation:in .6s ease;
   }
-  @keyframes pop{from{transform:scale(.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+  @keyframes in{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
 
-  .emoji{font-size:60px;line-height:1;margin-bottom:6px;display:block;animation:bob 2.2s ease-in-out infinite;}
-  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
-
-  .step-text{
-    font-size:20px;line-height:1.85;margin:14px 4px 24px;
-    min-height:110px;display:flex;align-items:center;justify-content:center;
-    white-space:pre-wrap;animation:fade .6s ease;
+  /* 顶部票据头 */
+  .head{
+    border-bottom:1.5px dashed var(--line);
+    padding:18px 24px 14px;
+    display:flex;justify-content:space-between;align-items:flex-start;
+    font-size:11px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;
   }
-  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-  .big{font-size:23px;font-weight:700;color:#c9853a;}
+  .head .no{font-variant-numeric:tabular-nums;}
+  .body{padding:30px 28px 26px;}
+  .kicker{font-size:11px;letter-spacing:.22em;color:var(--stamp);text-transform:uppercase;margin-bottom:18px;}
 
-  .btns{display:flex;flex-direction:column;gap:12px;align-items:center;}
+  .scene{font-size:46px;margin-bottom:14px;line-height:1;}
+  .msg{
+    font-size:20px;line-height:2;white-space:pre-wrap;
+    min-height:130px;display:flex;align-items:center;
+    animation:fade .55s ease;font-weight:500;
+  }
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;}}
+  .msg.big{font-size:25px;font-weight:600;}
+
+  .foot{
+    border-top:1.5px dashed var(--line);
+    padding:18px 24px 22px;
+    display:flex;flex-direction:column;gap:10px;
+  }
   button{
-    border:none;cursor:pointer;font-family:inherit;
-    background:var(--accent);color:#5a4326;font-weight:700;
-    font-size:17px;padding:13px 26px;border-radius:50px;width:100%;max-width:320px;
-    box-shadow:0 6px 0 #e0b020;transition:transform .08s, box-shadow .08s;
+    font-family:inherit;cursor:pointer;border:1.5px solid var(--ink);
+    background:transparent;color:var(--ink);
+    font-size:16px;font-weight:600;letter-spacing:.04em;
+    padding:13px 18px;border-radius:2px;width:100%;
+    transition:.15s;
   }
-  button:active{transform:translateY(4px);box-shadow:0 2px 0 #e0b020;}
-  button.alt{background:#ffe28a;box-shadow:0 6px 0 #e7c552;}
-  button.alt:active{box-shadow:0 2px 0 #e7c552;}
-  .hug{background:var(--pink)!important;box-shadow:0 6px 0 #e0809a!important;}
-  .hug:active{box-shadow:0 2px 0 #e0809a!important;}
+  button:active{transform:translateY(2px);}
+  button.fill{background:var(--ink);color:var(--card);}
+  button.warm{border-color:var(--stamp);color:var(--stamp);}
 
-  .hint{font-size:13px;color:#b39a6a;margin-top:14px;height:18px;}
+  .stamp{
+    position:absolute;top:14px;right:16px;width:58px;height:58px;
+    border:2px solid var(--stamp);border-radius:50%;
+    color:var(--stamp);font-size:9px;font-weight:700;letter-spacing:.06em;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    transform:rotate(-12deg);opacity:.55;line-height:1.3;
+  }
+  .perf{height:1px;}
+
+  /* 角色彩蛋区 */
+  .pals{display:flex;justify-content:center;gap:18px;padding:8px 0 20px;}
+  .pal{font-size:34px;cursor:pointer;line-height:1;transition:transform .12s;user-select:none;animation:bobp 2.6s ease-in-out infinite;}
+  .pal:nth-child(2){animation-delay:.4s;} .pal:nth-child(3){animation-delay:.8s;}
+  .pal:active{transform:scale(1.3) rotate(-6deg);}
+  @keyframes bobp{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+  .bubble{
+    position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--card);font-size:15px;font-weight:500;
+    padding:11px 18px;border-radius:20px;max-width:80vw;text-align:center;
+    opacity:0;transition:.3s;z-index:50;pointer-events:none;line-height:1.6;
+  }
+  .bubble.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .pal-hint{text-align:center;font-size:11px;color:var(--faint);letter-spacing:.1em;padding-bottom:4px;}
 </style>
 </head>
 <body>
-<div class="card">
-  <span class="emoji" id="emoji">🍌</span>
-  <div class="step-text" id="text"></div>
-  <div class="btns" id="btns"></div>
-  <div class="hint" id="hint"></div>
+<div class="ticket">
+  <div class="head">
+    <span>童童 → 妈妈</span>
+    <span class="no" id="no">NO. 01</span>
+  </div>
+  <div class="body">
+    <div class="kicker" id="kicker">一封笨笨的道歉</div>
+    <div class="scene" id="scene">🐷</div>
+    <div class="msg" id="msg"></div>
+  </div>
+  <div class="foot" id="foot"></div>
+  <div class="stamp">猪猪<br>专属</div>
+  <div class="pal-hint">↓ 戳戳它们 ↓</div>
+  <div class="pals">
+    <span class="pal" data-c="minion">🥽</span>
+    <span class="pal" data-c="maruko">👧</span>
+    <span class="pal" data-c="kuromi">🐰</span>
+  </div>
 </div>
+<div class="bubble" id="bubble"></div>
 
 <script>
-const deco=["🍌","💛","🐷","🐥","🌼"];
-setInterval(()=>{
-  const s=document.createElement("div");
-  s.className="float";s.textContent=deco[Math.random()*deco.length|0];
-  s.style.left=Math.random()*100+"vw";
-  s.style.animationDuration=(6+Math.random()*5)+"s";
-  s.style.fontSize=(18+Math.random()*18)+"px";
-  document.body.appendChild(s);
-  setTimeout(()=>s.remove(),11000);
-},900);
-
-// 每个节点：e=表情, t=文字, opts=[{label, alt?, go}], 或 end / hug
 const nodes={
-  start:{e:"🐷",t:"妈妈，是童童。\n先别急着走，\n给我一分钟，好不好？",
-    opts:[{label:"好呀，我看看 👀",go:"a1"},{label:"哼，说吧 😤",alt:true,go:"a1b"}]},
+  start:{s:"🐷",k:"一封笨笨的道歉",t:"妈，是童童。\n你先别划走……\n我有话，不太会说，\n但想跟你说。",
+    o:[{l:"你说吧",go:"a1",fill:1},{l:"哼。",go:"a1b"}]},
 
-  // 分支：温柔进 vs 还在气头上进 —— 都通向同一条暖线，但开场话不同
-  a1:{e:"💛",t:"谢谢你愿意给我这一分钟。\n我知道，最近我把你气坏了。",opts:[{label:"嗯…然后呢",go:"core1"}]},
-  a1b:{e:"🥺",t:"我知道你还在生气，\n生气是应该的，是我不好。\n那你就一边气，一边听我说，好吗？",opts:[{label:"……说吧",go:"core1"}]},
+  a1:{s:"🍌",k:"开头",t:"谢谢你没走。\n我知道这几天\n把你气得够呛。",o:[{l:"嗯",go:"c1"}]},
+  a1b:{s:"🥺",k:"开头",t:"你生气是对的。\n是我嘴太欠了。\n那你气归气，\n听我说完行吗。",o:[{l:"……行",go:"c1"}]},
 
-  core1:{e:"💛",t:"那天我说了好多气话，\n还说了否认你付出的话。\n那些话，是错的。",opts:[{label:"继续",go:"core2"}]},
-  core2:{e:"😢",t:"妈妈，对不起。\n不是敷衍的对不起，\n是我心里真的很后悔的那种。",opts:[{label:"我听着呢",go:"q1"}]},
+  c1:{s:"💛",k:"正题",t:"那天我说的那些话，\n说你白付出、\n说那些难听的——\n我错了，是真的错了。",o:[{l:"然后呢",go:"c2"}]},
+  c2:{s:"😔",k:"正题",t:"对不起。\n我不是随便说说，\n是我自己回想起来\n都难受的那种对不起。",o:[{l:"……",go:"q1"}]},
 
-  // 选择题1：让她参与，但两个答案都温柔
-  q1:{e:"🤔",t:"我想问问你——\n你还记得我小时候\n最爱粘着你的样子吗？",
-    opts:[{label:"当然记得呀",go:"q1a"},{label:"你这猪，又来😶",alt:true,go:"q1b"}]},
-  q1a:{e:"🥰",t:"我也记得。\n那个粘着你的童童一直都在，\n只是最近她心里有点累，\n就乱发脾气了。",opts:[{label:"继续",go:"core3"}]},
-  q1b:{e:"🐷",t:"哈哈，对，我就是你的小猪。\n你叫我猪的时候，\n其实我心里是甜的。\n这次是我这只猪不乖，气到你了。",opts:[{label:"继续",go:"core3"}]},
+  q1:{s:"🤍",k:"问你一句",t:"我问你个事——\n你还记不记得\n我小时候老黏着你、\n喊你抱的样子？",
+    o:[{l:"记得啊",go:"q1a",fill:1},{l:"记得，你这猪",go:"q1b",warm:1}]},
+  q1a:{s:"🥹",k:"心里话",t:"那个童童没走。\n她就是这阵子\n心里有点装不下了，\n才冲你乱发火。",o:[{l:"继续",go:"c3"}]},
+  q1b:{s:"🐷",k:"心里话",t:"对，我就是你那只猪。\n你骂我猪的时候\n我其实是乐的。\n这回是我这猪不懂事，\n气着你了。",o:[{l:"继续",go:"c3"}]},
 
-  core3:{e:"🐥",t:"我想悄悄告诉你：\n我不是懒，也不是不懂事。\n我只是有时候心里\n装了一些说不出口的累。",opts:[{label:"嗯",go:"core4"}]},
-  core4:{e:"🌼",t:"那些累我没说好，\n反而用伤人的方式甩给了你。\n这是我的不对，\n我在学着好好说话了。",opts:[{label:"继续",go:"q2"}]},
+  c3:{s:"🐥",k:"想让你知道",t:"我不是懒，\n也不是不想懂事。\n我就是有时候\n心里压了些说不出的累。",o:[{l:"嗯",go:"c4"}]},
+  c4:{s:"🌧️",k:"想让你知道",t:"可我没处理好，\n反手就把脾气\n撒你身上了。\n这是我不对。\n我在学怎么好好说话。",o:[{l:"继续",go:"q2"}]},
 
-  // 选择题2
-  q2:{e:"💭",t:"你愿意，\n再给我一次好好和你说话的机会吗？",
-    opts:[{label:"傻孩子，当然愿意",go:"core5"},{label:"看你表现😏",alt:true,go:"core5"}]},
+  q2:{s:"💭",k:"再问你一句",t:"你……\n还愿意再给我\n一次好好说话的机会吗？",
+    o:[{l:"傻孩子",go:"c5",fill:1},{l:"看你表现",go:"c5",warm:1}]},
 
-  core5:{e:"💛",t:"我是个愿意努力的孩子。\n真的。\n我想让你看见\n那个努力的童童，\n而不只是犯错的童童。",opts:[{label:"再点一下",go:"hug"}]},
+  c5:{s:"💛",k:"我想说的",t:"我是个肯努力的孩子。\n真的。\n我就是想让你看见\n那个在使劲的童童，\n不是只会闯祸的那个。",o:[{l:"最后一步",go:"hug"}]},
 
-  hug:{e:"🫶",t:"现在，\n请你按住下面这个抱抱，\n替我抱抱你自己——\n那是我想给你的拥抱。",
-    opts:[{label:"按住抱抱 🫶",hug:true,go:"final"}]},
+  hug:{s:"🫶",k:"替我抱抱你",t:"按住下面，\n替我抱一下你自己。\n那是我想给你的\n那个抱抱。",
+    o:[{l:"按住 🫶",go:"final",hug:1,fill:1}]},
 
-  final:{e:"🐷💛🍌",t:"妈妈，我爱你。\n我们和好，好不好？\n以后我想和你\n好好说话，慢慢来。\n\n——你的童童\n（这是我一页一页\n亲手给你做的）",
-    end:true,opts:[{label:"再看一遍 🔁",go:"start"}]},
+  final:{s:"🐷",k:"完",t:"妈，我爱你。\n我们和好吧。\n以后我想跟你\n慢慢地、好好地说话。\n\n——童童\n（这是我一页页\n给你做的）",end:1,
+    o:[{l:"再看一遍",go:"start"}]},
 };
 
-const E=document.getElementById("emoji");
-const T=document.getElementById("text");
-const BTNS=document.getElementById("btns");
-const H=document.getElementById("hint");
-let cur="start";
+const S=document.getElementById("scene");
+const M=document.getElementById("msg");
+const F=document.getElementById("foot");
+const K=document.getElementById("kicker");
+const NO=document.getElementById("no");
+let cur="start", count=1;
 
 function render(){
   const n=nodes[cur];
-  E.textContent=n.e;
-  T.innerHTML=`<span class="${cur==='start'||n.end?'big':''}">${n.t}</span>`;
-  T.style.animation="none";void T.offsetWidth;T.style.animation="";
-  BTNS.innerHTML="";
-  n.opts.forEach(o=>{
+  S.textContent=n.s;
+  K.textContent=n.k;
+  NO.textContent="NO. "+String(count).padStart(2,"0");
+  M.className="msg"+((cur==="start"||n.end)?" big":"");
+  M.textContent=n.t;
+  M.style.animation="none";void M.offsetWidth;M.style.animation="";
+  F.innerHTML="";
+  n.o.forEach(o=>{
     const b=document.createElement("button");
-    b.textContent=o.label;
-    if(o.alt)b.classList.add("alt");
-    if(o.hug)b.classList.add("hug");
-    b.onclick=()=>{ if(o.hug)burst(); cur=o.go; render(); };
-    BTNS.appendChild(b);
+    b.textContent=o.l;
+    if(o.fill)b.classList.add("fill");
+    if(o.warm)b.classList.add("warm");
+    b.onclick=()=>{ if(o.hug)burst(); if(!n.end)count++; if(cur==="final"&&o.go==="start")count=1; cur=o.go; render(); };
+    F.appendChild(b);
   });
-  H.textContent=cur==="start"?"（轻轻点一下）":"";
 }
 function burst(){
-  for(let k=0;k<18;k++){
+  for(let k=0;k<20;k++){
     const h=document.createElement("div");
     h.textContent="💛";h.style.position="fixed";
-    h.style.left="50%";h.style.top="55%";h.style.fontSize="24px";
-    h.style.zIndex=99;h.style.pointerEvents="none";
+    h.style.left="50%";h.style.top="55%";h.style.fontSize="22px";
+    h.style.zIndex="99";h.style.pointerEvents="none";
     document.body.appendChild(h);
-    const ang=Math.random()*6.28,dist=80+Math.random()*120;
+    const a=Math.random()*6.28,d=70+Math.random()*120;
     h.animate([{transform:"translate(-50%,-50%) scale(.3)",opacity:1},
-      {transform:`translate(${Math.cos(ang)*dist-50}%,${Math.sin(ang)*dist-50}%) scale(1.4)`,opacity:0}],
-      {duration:900,easing:"ease-out"});
-    setTimeout(()=>h.remove(),900);
+      {transform:`translate(${Math.cos(a)*d-50}%,${Math.sin(a)*d-50}%) scale(1.3)`,opacity:0}],
+      {duration:850,easing:"ease-out"});
+    setTimeout(()=>h.remove(),850);
   }
 }
 render();
+
+// 角色彩蛋：原创暖心台词（非影视原句），每个角色一组随机蹦
+const lines={
+  minion:["波拿那~！妈妈最棒啦！🍌","嘎哈哈，抱一个嘛~","我跟童童一起，求妈妈别气啦~"],
+  maruko:["妈妈，今天也辛苦你啦~","嘿嘿，原谅童童一次嘛~","我们一家人，要开开心心的呀。"],
+  kuromi:["哼，嘴硬一下下，其实超爱你的啦。","别凶啦，抱抱更香哦~","坏脾气交给我，温柔留给妈妈~"],
+};
+const bubble=document.getElementById("bubble");
+let bubbleTimer=null;
+document.querySelectorAll(".pal").forEach(p=>{
+  p.addEventListener("click",()=>{
+    const arr=lines[p.dataset.c];
+    bubble.textContent=arr[Math.random()*arr.length|0];
+    bubble.classList.add("show");
+    clearTimeout(bubbleTimer);
+    bubbleTimer=setTimeout(()=>bubble.classList.remove("show"),2600);
+  });
+});
 </script>
 </body>
 </html>
