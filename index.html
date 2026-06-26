@@ -57,11 +57,11 @@
     filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff) drop-shadow(0 0 1px #fff);}
   .sticker:hover{transform:scale(1.06) rotate(0deg)!important;}
   .sticker:active{transform:scale(1.12)!important;}
-  #stickerBob{width:120px;top:-46px;right:-30px;transform:rotate(11deg);}
-  #stickerDj{width:104px;bottom:64px;left:-40px;transform:rotate(-13deg);}
+  #stickerBob{width:110px;top:-40px;right:18px;transform:rotate(9deg);}
+  #stickerDj{width:100px;bottom:18px;left:-34px;transform:rotate(-11deg);}
   @media(max-width:480px){
-    #stickerBob{width:92px;top:-34px;right:-14px;}
-    #stickerDj{width:80px;bottom:60px;left:-18px;}
+    #stickerBob{width:84px;top:-30px;right:8px;}
+    #stickerDj{width:78px;bottom:14px;left:-16px;}
   }
   .msg{
     font-size:20px;line-height:2;white-space:pre-wrap;
@@ -133,32 +133,32 @@
 
 <script>
 const nodes={
-  start:{s:"🐷",k:"一封笨笨的道歉",t:"妈,是童童。\n你先别划走......\n我有话,不太会说,\n但想跟你说。",
+  start:{s:"🐷",k:"一封笨笨的道歉",t:"妈妈,是童童。\n你先别划走......\n我有话,不太会说,\n但想跟你说。",
     o:[{l:"你说吧",go:"a1",fill:1},{l:"哼。",go:"a1b"}]},
 
   a1:{s:"🍌",k:"开头",t:"谢谢你没走。\n我知道这几天\n把你气得够呛。",o:[{l:"嗯",go:"c1"}]},
   a1b:{s:"🥺",k:"开头",t:"你生气是对的。\n是我嘴太欠了。\n那你气归气,\n听我说完行吗。",o:[{l:"......行",go:"c1"}]},
 
   c1:{s:"💛",k:"正题",t:"那天我说的那些话,\n说你白付出、\n说那些难听的--\n我错了,是真的错了。",o:[{l:"然后呢",go:"c2"}]},
-  c2:{s:"😔",k:"正题",t:"对不起。\n我不是随便说说,\n是我自己回想起来\n都难受的那种对不起。",o:[{l:"......",go:"q1"}]},
+  c2:{s:"😔",k:"正题",t:"对不起。\n我不是随便说说,\n是我这几天每每\n自己回想起来\n都难受的那种对不起。",o:[{l:"......",go:"q1"}]},
 
   q1:{s:"🤍",k:"问你一句",t:"我问你个事--\n你还记不记得\n我小时候老黏着你、\n喊你抱的样子?",
     o:[{l:"记得啊",go:"q1a",fill:1},{l:"记得,你这猪",go:"q1b",warm:1}]},
-  q1a:{s:"🥹",k:"心里话",t:"那个童童没走。\n她就是这阵子\n心里有点装不下了,\n才冲你乱发火。",o:[{l:"继续",go:"c3"}]},
+  q1a:{s:"🥹",k:"心里话",t:"那个童童没走。\n这阵子是我不懂事,\n说了不该说的话,\n我知道错了。",o:[{l:"继续",go:"c3"}]},
   q1b:{s:"🐷",k:"心里话",t:"对,我就是你那只猪。\n你骂我猪的时候\n我其实是乐的。\n这回是我这猪不懂事,\n气着你了。",o:[{l:"继续",go:"c3"}]},
 
-  c3:{s:"🐥",k:"想让你知道",t:"我不是懒,\n也不是不想懂事。\n我就是有时候\n心里压了些说不出的累。",o:[{l:"嗯",go:"c4"}]},
-  c4:{s:"🌧️",k:"想让你知道",t:"可我没处理好,\n反手就把脾气\n撒你身上了。\n这是我不对。\n我在学怎么好好说话。",o:[{l:"继续",go:"q2"}]},
+  c3:{s:"🐥",k:"想让你知道",t:"那些话不是你的错,\n是我不该说。\n我不该拿你\n出气。",o:[{l:"嗯",go:"c4"}]},
+  c4:{s:"🌧️",k:"想让你知道",t:"不管怎么样,\n发脾气都是我不对。\n这件事是我错了,\n我在学怎么好好说话。",o:[{l:"继续",go:"q2"}]},
 
-  q2:{s:"💭",k:"再问你一句",t:"你......\n还愿意再给我\n一次好好说话的机会吗?",
+  q2:{s:"💭",k:"再问你一句",t:"亲爱的momoko😼\n还愿意再给我\n一次好好说话的机会吗?",
     o:[{l:"傻孩子",go:"c5",fill:1},{l:"看你表现",go:"c5",warm:1}]},
 
-  c5:{s:"💛",k:"我想说的",t:"我是个肯努力的孩子。\n真的。\n我就是想让你看见\n那个在使劲的童童,\n不是只会闯祸的那个。",o:[{l:"最后一步",go:"hug"}]},
+  c5:{s:"💛",k:"我想说的",t:"我是个肯努力的孩子。\n我只是想让你看见\n那个在使劲的童童,\n不是只会闯祸的那个。",o:[{l:"最后一步",go:"hug"}]},
 
   hug:{s:"🫶",k:"替我抱抱你",t:"按住下面,\n替我抱一下你自己。\n那是我想给你的\n那个抱抱。",
     o:[{l:"按住 🫶",go:"final",hug:1,fill:1}]},
 
-  final:{s:"🐷",k:"完",t:"妈,我爱你。\n我们和好吧。\n以后我想跟你\n慢慢地、好好地说话。\n\n--童童\n(这是我一页页\n给你做的)",end:1,
+  final:{s:"🐷",k:"完",t:"妈妈,我爱你。\n我们和好吧。\n以后我想跟你\n慢慢地、好好地说话。\n\n--童童\n(这是我一页页\n给你做的)",end:1,
     o:[{l:"再看一遍",go:"start"}]},
 };
 
@@ -205,7 +205,7 @@ render();
 
 // 小黄人贴纸：点它们说话
 const bobLines=["巴拿拿~抱着小熊来抱抱妈妈啦！","波拿那~妈妈别气，抱一个嘛~","我和小熊都想你了，妈妈~","软软的抱抱，送给你~","妈妈辛苦了，mua~"];
-const djLines=["嘿~播一首和好的歌给你听~","耳机里都是童童爱你的声音哟~","耐~妈妈最棒！","别闹啦，跳个舞和好吧~","开心点嘛，听我的~"];
+const djLines=["和好吧。这事儿，听我的。","别气了。酷的人不记仇。","节奏我来，你只管开心。","这首歌，叫《对不起》。","行了行了，抱一个，完事。"];
 const bubble=document.getElementById("bubble");
 const pigimg=document.getElementById("pigimg");
 let bubbleTimer=null;
