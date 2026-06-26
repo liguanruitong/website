@@ -21,12 +21,12 @@
     min-height:100vh;padding:22px;
   }
   .ticket{
-    width:min(92vw,420px);
+    width:min(92vw,440px);
     background:var(--card);
     border:1px solid var(--line);
     border-radius:4px;
     box-shadow:0 14px 40px rgba(80,60,30,.16);
-    position:relative;overflow:hidden;
+    position:relative;
     animation:in .6s ease;
   }
   @keyframes in{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
@@ -43,12 +43,26 @@
   .kicker{font-size:11px;letter-spacing:.22em;color:var(--stamp);text-transform:uppercase;margin-bottom:18px;}
 
   .scene{font-size:46px;margin-bottom:14px;line-height:1;}
-  .pigimg{width:100%;max-width:160px;display:inline-block;margin:0 4px 10px;cursor:pointer;vertical-align:bottom;
+  .pigimg{width:100%;max-width:230px;display:block;margin:0 auto 10px;cursor:pointer;
     filter:drop-shadow(0 6px 10px rgba(80,60,30,.18));transition:transform .12s;}
   .pigimg:active{transform:scale(1.04) rotate(-1deg);}
-  .minionimg{width:100%;max-width:128px;display:inline-block;margin:0 4px 10px;cursor:pointer;vertical-align:bottom;
-    filter:drop-shadow(0 6px 10px rgba(80,60,30,.18));transition:transform .12s;}
-  .minionimg:active{transform:scale(1.06) rotate(2deg);}
+
+  /* 贴纸：贴在信上的小黄人 */
+  .sticker{position:absolute;cursor:pointer;z-index:6;
+    filter:drop-shadow(2px 4px 5px rgba(80,60,30,.28));
+    transition:transform .15s ease;}
+  .sticker img{display:block;width:100%;
+    /* 贴纸白边效果 */
+    -webkit-filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff) drop-shadow(0 0 1px #fff);
+    filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff) drop-shadow(0 0 1px #fff);}
+  .sticker:hover{transform:scale(1.06) rotate(0deg)!important;}
+  .sticker:active{transform:scale(1.12)!important;}
+  #stickerBob{width:120px;top:-46px;right:-30px;transform:rotate(11deg);}
+  #stickerDj{width:104px;bottom:64px;left:-40px;transform:rotate(-13deg);}
+  @media(max-width:480px){
+    #stickerBob{width:92px;top:-34px;right:-14px;}
+    #stickerDj{width:80px;bottom:60px;left:-18px;}
+  }
   .msg{
     font-size:20px;line-height:2;white-space:pre-wrap;
     min-height:130px;display:flex;align-items:center;
@@ -100,6 +114,8 @@
 </head>
 <body>
 <div class="ticket">
+  <div class="sticker" id="stickerBob"><img src="img/bob_cut.png" alt="小黄人鲍勃" /></div>
+  <div class="sticker" id="stickerDj"><img src="img/dj_cut.png" alt="小黄人DJ" /></div>
   <div class="head">
     <span>童童 → 妈妈</span>
     <span class="no" id="no">NO. 01</span>
@@ -107,12 +123,11 @@
   <div class="body">
     <div class="kicker" id="kicker">一封笨笨的道歉</div>
     <img class="pigimg" id="pigimg" src="img/pig_cut.png" alt="小猪" />
-    <img class="minionimg" id="minionimg" src="img/bob_cut.png" alt="小黄人" />
     <div class="msg" id="msg"></div>
   </div>
   <div class="foot" id="foot"></div>
   <div class="stamp">猪猪<br>专属</div>
-  <div class="pal-hint">↑ 戳小猪和小黄人,它们会说话 ↑</div>
+  <div class="pal-hint">戳小猪、也戳戳角落里的小黄人贴纸 · 它们会说话</div>
 </div>
 <div class="bubble" id="bubble"></div>
 
@@ -188,31 +203,24 @@ function burst(){
 }
 render();
 
-// 小猪说话:点它随机蹦一句暖心话
-const pigLines=["哼哼~妈妈你最好啦。","抱抱嘛~别生气了嘛~","童童让我来哄你开心~","嘴硬的是我,心里超爱你的。","妈妈辛苦啦,抱个~","我们和好好不好嘛~","喵,不对,是哼叽~我是你的小猪呦。"];
+// 小黄人贴纸：点它们说话
+const bobLines=["巴拿拿~抱着小熊来抱抱妈妈啦！","波拿那~妈妈别气，抱一个嘛~","我和小熊都想你了，妈妈~","软软的抱抱，送给你~","妈妈辛苦了，mua~"];
+const djLines=["嘿~播一首和好的歌给你听~","耳机里都是童童爱你的声音哟~","耐~妈妈最棒！","别闹啦，跳个舞和好吧~","开心点嘛，听我的~"];
 const bubble=document.getElementById("bubble");
 const pigimg=document.getElementById("pigimg");
 let bubbleTimer=null;
-pigimg.addEventListener("click",()=>{
-  bubble.textContent=pigLines[Math.random()*pigLines.length|0];
+function say(arr,el,rot){
+  bubble.textContent=arr[Math.random()*arr.length|0];
   bubble.classList.add("show");
-  pigimg.style.transform="scale(1.06) rotate(-2deg)";
-  setTimeout(()=>pigimg.style.transform="",180);
+  const old=el.style.transform;
+  el.style.transform=`scale(1.12) rotate(${rot}deg)`;
+  setTimeout(()=>el.style.transform=old,180);
   clearTimeout(bubbleTimer);
   bubbleTimer=setTimeout(()=>bubble.classList.remove("show"),2600);
-});
-
-// 小黄人打电话:点它随机蹦一句
-const minionLines=["巴拿拿~抱着小熊来抱抱妈妈啦！","波拿那~妈妈别气，抱一个嘛~","我和小熊都想你了，妈妈~","嘿嘿，软软的抱抱送给你~","妈妈辛苦了，mua~","咱俩一起哄妈妈开心，好不好~"];
-const minionimg=document.getElementById("minionimg");
-minionimg.addEventListener("click",()=>{
-  bubble.textContent=minionLines[Math.random()*minionLines.length|0];
-  bubble.classList.add("show");
-  minionimg.style.transform="scale(1.08) rotate(3deg)";
-  setTimeout(()=>minionimg.style.transform="",180);
-  clearTimeout(bubbleTimer);
-  bubbleTimer=setTimeout(()=>bubble.classList.remove("show"),2600);
-});
+}
+pigimg.addEventListener("click",()=>say(pigLines,pigimg,-2));
+document.getElementById("stickerBob").addEventListener("click",function(){say(bobLines,this,11);});
+document.getElementById("stickerDj").addEventListener("click",function(){say(djLines,this,-13);});
 </script>
 </body>
 </html>
