@@ -246,7 +246,7 @@ const nodes={
   gallery:{s:"🖼️",k:"我们的样子",t:"这些,\n是我们待过的好时候。\n往下慢慢看~",gallery:1,
     o:[{l:"看完啦,继续",go:"final",fill:1}]},
 
-  final:{s:"🐷",k:"完",t:"妈妈,我爱你。\n我们和好吧。\n以后我想跟你\n慢慢地、好好地说话。\n\n--童童\n(这是我一页页\n给你做的)",end:1,
+  final:{s:"🐷",k:"完",t:"爱你的童童,\n希望你永远\n幸福快乐做自己。",end:1,
     o:[{l:"再看一遍",go:"start"}]},
 };
 
@@ -418,7 +418,29 @@ function startBento(onDone){
   const spanFor=(i,n)=>{ if(n>=5){if(i===0)return"big";if(i===3)return"tall";return"";} if(n===4){if(i===0)return"big";return"";} if(i===0)return"wide";return""; };
   galleryImgs.forEach((src,i)=>{ const c=document.createElement("div"); c.className="cell "+spanFor(i,galleryImgs.length); c.style.animationDelay=(0.12+i*0.09)+"s"; const im=new Image(); im.src=src; im.alt=""; c.appendChild(im); grid.appendChild(c); });
   layer.style.display="flex"; requestAnimationFrame(()=>layer.classList.add("on"));
-  let gone=false; btn.onclick=()=>{ if(gone)return; gone=true; layer.classList.remove("on"); setTimeout(()=>{layer.style.display="none"; onDone&&onDone();},900); };
+  // 背景随滑动在相近暖色系之间渐变：照片多时跟真滚动，照片少（不溢出）时跟滑轮虚拟进度
+  const palette=[[42,32,24],[58,38,26],[74,44,30],[48,36,28],[34,26,20]];
+  const lerp=(a,b,t)=>Math.round(a+(b-a)*t);
+  let virt=0; // 虚拟进度 0..1
+  const applyBg=(p)=>{
+    p=Math.min(1,Math.max(0,p))*(palette.length-1);
+    const i=Math.min(palette.length-2,Math.floor(p)); const f=p-i;
+    const c1=palette[i],c2=palette[i+1];
+    const top=[lerp(c1[0],c2[0],f),lerp(c1[1],c2[1],f),lerp(c1[2],c2[2],f)];
+    const bot=top.map(v=>Math.max(0,v-14));
+    layer.style.background=`radial-gradient(circle at 50% 30%, rgb(${top[0]},${top[1]},${top[2]}), rgb(${bot[0]},${bot[1]},${bot[2]}) 80%)`;
+  };
+  const progress=()=>{
+    const max=layer.scrollHeight-layer.clientHeight;
+    if(max>4) return layer.scrollTop/max;   // 照片多：真实滚动
+    return virt;                            // 照片少：虚拟进度
+  };
+  const onScroll=()=>applyBg(progress());
+  const onWheel=(e)=>{ const max=layer.scrollHeight-layer.clientHeight; if(max>4) return; virt=Math.min(1,Math.max(0,virt+e.deltaY/1400)); applyBg(virt); };
+  layer.addEventListener("scroll",onScroll);
+  layer.addEventListener("wheel",onWheel,{passive:true});
+  applyBg(0);
+  let gone=false; btn.onclick=()=>{ if(gone)return; gone=true; layer.removeEventListener("scroll",onScroll); layer.removeEventListener("wheel",onWheel); layer.classList.remove("on"); setTimeout(()=>{layer.style.display="none"; onDone&&onDone();},900); };
 }
 
 render();
