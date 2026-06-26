@@ -144,12 +144,13 @@
   .bento .sub{font-family:"Huiwen Mincho","Noto Serif SC",serif;color:#bcab8e;
     font-size:13px;letter-spacing:.28em;margin-top:-12px;}
   .bentogrid{display:grid;gap:14px;width:min(1040px,94vw);
-    grid-template-columns:repeat(4,1fr);grid-auto-rows:150px;}
+    grid-template-columns:repeat(4,1fr);grid-auto-rows:150px;grid-auto-flow:dense;}
   .bentogrid .cell{position:relative;overflow:hidden;border-radius:18px;
     box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transform:scale(.92) translateY(14px);
     animation:bcell .7s cubic-bezier(.2,.7,.3,1) forwards;background:#0d0906;}
   .bentogrid .cell img{width:100%;height:100%;object-fit:cover;display:block;
     transition:transform .5s ease;}
+  .bentogrid .cell.full img{object-fit:contain;background:#0d0906;}
   .bentogrid .cell:hover img{transform:scale(1.06);}
   /* 大小对比:1张大(2x2)、几张竖(1x2)、余 1x1 */
   .bentogrid .big{grid-column:span 2;grid-row:span 2;}
@@ -426,26 +427,33 @@ function startBento(onDone){
   btn.style.display=""; // 重置内联，让 CSS 控制显隐（重进时生效）
   grid.innerHTML="";
   if(!galleryImgs.length){ onDone&&onDone(); return; }
-  // 随机裁切/尺寸：同一张图在不同卡里显示不同区域+不同大小，营造「裁成多张」观感
+  // 随机裁切/尺寸：同一张图在不同卡里显示不同区域+不同大小，营造「裁成多张」观感；
+  // 部分卡片展示完整图(full)。取图用与张数互质的步长跳取，避免同一张图扎堆同列/相邻。
   const spans=["","","","wide","tall","big"]; // big/tall/wide 占比较少，1x1 居多
   const posList=["50% 50%","50% 20%","50% 80%","20% 50%","80% 50%","30% 30%","70% 70%"];
-  let seq=0; // 全局序，决定取哪张图+动画延迟
+  const N=galleryImgs.length;
+  // 与 N 互质的步长，让 idx 跳着走（连续卡片不取同图，降低同列同图概率）
+  const coprime=(a,b)=>{while(b){[a,b]=[b,a%b];}return a===1;};
+  let step=Math.max(1,Math.floor(N*0.618)); while(N>1 && !coprime(step,N)) step++;
+  let seq=0; // 全局序，决定动画延迟
+  let pick=Math.floor(Math.random()*N); // 当前取图游标
   function addBatch(n){
     for(let j=0;j<n;j++){
-      const idx=seq% galleryImgs.length;
+      const idx=pick% N; pick=(pick+step)%N; // 跳步取图，打散
       const src=galleryImgs[idx];
       const c=document.createElement("div");
-      // 第一批首卡强制 big，保证一眼看到大小对比；其余随机
-      let span = (seq===0) ? "big" : spans[(seq*7+3)%spans.length];
-      c.className="cell "+span;
+      const isFull = (seq>0) && (seq%4===2); // 约 1/4 卡片用完整图
+      // 第一批首卡强制 big；完整图固定 1x1(整图不裁)；其余随机 span
+      let span = (seq===0) ? "big" : (isFull ? "" : spans[(seq*7+idx*3+1)%spans.length]);
+      c.className="cell "+span+(isFull?" full":"");
       c.style.animationDelay=(Math.min(0.6, (j*0.07))+"s");
       const im=new Image(); im.src=src; im.alt="";
-      im.style.objectPosition=posList[(seq*3+idx)%posList.length];
+      if(!isFull) im.style.objectPosition=posList[(seq*3+idx*5)%posList.length];
       c.appendChild(im); grid.appendChild(c);
       seq++;
     }
   }
-  addBatch(Math.max(8, galleryImgs.length+2)); // 首屏先铺一批
+  addBatch(Math.max(10, N+4)); // 首屏先铺一批
 
   layer.style.display="flex"; requestAnimationFrame(()=>layer.classList.add("on"));
 
