@@ -132,11 +132,39 @@
   .heartburst{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
     z-index:4;pointer-events:none;width:0;height:0;}
   /* 瀑布流相册 */
-  .gallery{column-count:2;column-gap:10px;margin:6px 0 4px;}
-  .gallery img{width:100%;border-radius:6px;margin-bottom:10px;display:block;
-    border:4px solid #fff;box-shadow:0 4px 10px rgba(80,60,30,.2);
-    break-inside:avoid;animation:gfade .6s ease both;}
-  @keyframes gfade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  /* 全屏 Bento Grid 相册层 */
+  .bento{position:fixed;inset:0;z-index:190;display:none;flex-direction:column;
+    align-items:center;justify-content:center;gap:22px;padding:4vh 4vw;
+    background:radial-gradient(circle at 50% 30%, #2a2018, #181109 75%);
+    opacity:0;transition:opacity .9s ease;overflow:auto;}
+  .bento.on{display:flex;opacity:1;}
+  .bento h2{font-family:"Huiwen Mincho","Noto Serif SC",serif;
+    color:#f0e4cf;font-size:clamp(20px,3vw,30px);letter-spacing:.16em;
+    font-weight:400;margin-bottom:2px;text-shadow:0 2px 14px rgba(0,0,0,.5);}
+  .bento .sub{font-family:"Huiwen Mincho","Noto Serif SC",serif;color:#bcab8e;
+    font-size:13px;letter-spacing:.28em;margin-top:-12px;}
+  .bentogrid{display:grid;gap:14px;width:min(1040px,94vw);
+    grid-template-columns:repeat(4,1fr);grid-auto-rows:150px;}
+  .bentogrid .cell{position:relative;overflow:hidden;border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transform:scale(.92) translateY(14px);
+    animation:bcell .7s cubic-bezier(.2,.7,.3,1) forwards;background:#0d0906;}
+  .bentogrid .cell img{width:100%;height:100%;object-fit:cover;display:block;
+    transition:transform .5s ease;}
+  .bentogrid .cell:hover img{transform:scale(1.06);}
+  /* 大小对比:1张大(2x2)、几张竖(1x2)、余 1x1 */
+  .bentogrid .big{grid-column:span 2;grid-row:span 2;}
+  .bentogrid .tall{grid-row:span 2;}
+  .bentogrid .wide{grid-column:span 2;}
+  @keyframes bcell{to{opacity:1;transform:scale(1) translateY(0);}}
+  .bento .bento-btn{font-family:inherit;cursor:pointer;border:1.5px solid #e7d8bd;
+    background:transparent;color:#f0e4cf;font-size:16px;font-weight:600;letter-spacing:.06em;
+    padding:13px 34px;border-radius:30px;transition:.18s;}
+  .bento .bento-btn:hover{background:#e7d8bd;color:#1a120a;}
+  @media(max-width:680px){
+    .bentogrid{grid-template-columns:repeat(2,1fr);grid-auto-rows:120px;width:94vw;}
+    .bentogrid .big{grid-column:span 2;grid-row:span 2;}
+    .bentogrid .wide{grid-column:span 2;}
+  }
   /* 时光机过场 */
   .timewarp{position:fixed;inset:0;z-index:200;background:#000;display:none;
     align-items:center;justify-content:center;flex-direction:column;gap:14px;
@@ -163,6 +191,12 @@
 <div class="timewarp" id="timewarp">
   <div class="l1">正在乘坐时光机......</div>
   <div class="l2">DIVING BACK IN TIME.....</div>
+</div>
+<div class="bento" id="bento">
+  <h2>我们待过的好时候</h2>
+  <div class="sub">OUR GOOD OLD DAYS</div>
+  <div class="bentogrid" id="bentogrid"></div>
+  <button class="bento-btn" id="bentoBtn">看完啦,继续 →</button>
 </div>
 <div class="ticket">
   <div class="sticker" id="stickerBob"><img src="img/bob_cut.png" alt="小黄人鲍勃" /></div>
@@ -342,11 +376,11 @@ function setupHug(btn, goNode){
             {transform:`translate(${Math.cos(a)*d-50}%,${Math.sin(a)*d-50}%) scale(.4)`,opacity:0}],
             {duration:1600,easing:"ease-out"}); setTimeout(()=>sp.remove(),1600); }
       }, 1000);
-      // 字停留约2.4秒后进瀑布流(待接入撕照片环节)
+      // 字停留约2.4秒 → 黑屏淡出 → 全屏 Bento 相册
       setTimeout(()=>{
-        count++; cur=goNode; render();
         tw.classList.remove("show-text");
-        setTimeout(()=>tw.classList.remove("on"), 700);
+        startBento(()=>{ count++; cur="final"; render(); });   // Bento继续后直接进结尾
+        setTimeout(()=>tw.classList.remove("on"), 900);
       }, 3800);
     }, 2000);
   }
@@ -374,6 +408,17 @@ function setupHug(btn, goNode){
   btn.addEventListener("touchend",up);
   progressUI(0);
   hugCleanup=cleanup;
+}
+
+function startBento(onDone){
+  const layer=document.getElementById("bento");
+  const grid=document.getElementById("bentogrid");
+  const btn=document.getElementById("bentoBtn");
+  grid.innerHTML="";
+  const spanFor=(i,n)=>{ if(n>=5){if(i===0)return"big";if(i===3)return"tall";return"";} if(n===4){if(i===0)return"big";return"";} if(i===0)return"wide";return""; };
+  galleryImgs.forEach((src,i)=>{ const c=document.createElement("div"); c.className="cell "+spanFor(i,galleryImgs.length); c.style.animationDelay=(0.12+i*0.09)+"s"; const im=new Image(); im.src=src; im.alt=""; c.appendChild(im); grid.appendChild(c); });
+  layer.style.display="flex"; requestAnimationFrame(()=>layer.classList.add("on"));
+  let gone=false; btn.onclick=()=>{ if(gone)return; gone=true; layer.classList.remove("on"); setTimeout(()=>{layer.style.display="none"; onDone&&onDone();},900); };
 }
 
 render();
